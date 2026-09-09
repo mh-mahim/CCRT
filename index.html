@@ -1,0 +1,3647 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#090d16">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Number Tools Pro | M. H. MAHIM</title>
+    
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="./manifest.json">
+    
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Phone Number Parsing Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.10.51/libphonenumber-js.min.js"></script>
+    
+    <style>
+        /* ===================================================
+           1. DESIGN SYSTEM: CYBER-GLASS PRO TOKENS
+           =================================================== */
+        :root {
+            --bg-canvas: #f4f6fb;
+            --bg-surface: rgba(255, 255, 255, 0.84);
+            --bg-surface-solid: #ffffff;
+            --bg-surface-elevated: #eef2f8;
+            --bg-surface-hover: #e2e8f4;
+            --border-subtle: rgba(15, 23, 42, 0.08);
+            --border-highlight: rgba(99, 102, 241, 0.3);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --accent-primary: #4f46e5;
+            --accent-primary-gradient: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            --accent-primary-glow: rgba(79, 70, 229, 0.25);
+            --accent-cyan: #0284c7;
+            --accent-cyan-container: rgba(2, 132, 199, 0.1);
+            --accent-success: #059669;
+            --accent-success-container: rgba(5, 150, 105, 0.1);
+            --accent-warning: #d97706;
+            --accent-danger: #e11d48;
+            --accent-danger-container: rgba(225, 29, 72, 0.1);
+            
+            --glass-blur: blur(20px);
+            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+            --shadow-elevated: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        [data-theme="dark"] {
+            --bg-canvas: #090d16;
+            --bg-surface: rgba(17, 24, 39, 0.75);
+            --bg-surface-solid: #111827;
+            --bg-surface-elevated: #192234;
+            --bg-surface-hover: #222d44;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(129, 140, 248, 0.35);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-primary: #6366f1;
+            --accent-primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #06b6d4 100%);
+            --accent-primary-glow: rgba(99, 102, 241, 0.35);
+            --accent-cyan: #22d3ee;
+            --accent-cyan-container: rgba(34, 211, 238, 0.12);
+            --accent-success: #10b981;
+            --accent-success-container: rgba(16, 185, 129, 0.15);
+            --accent-warning: #f59e0b;
+            --accent-danger: #f43f5e;
+            --accent-danger-container: rgba(244, 63, 94, 0.15);
+            
+            --glass-blur: blur(22px);
+            --shadow-card: 0 10px 35px -5px rgba(0, 0, 0, 0.5);
+            --shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInSlideDown {
+            from { opacity: 0; transform: translate(-50%, -14px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @keyframes sheetSlideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        /* Top Header Capsule */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 24px);
+            max-width: 880px;
+            margin: 12px auto;
+            padding: 10px 16px;
+            background: var(--bg-surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+            box-shadow: var(--shadow-card);
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            user-select: none;
+        }
+        .brand-icon-wrapper {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--accent-primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-primary-glow);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-success);
+            box-shadow: 0 0 8px var(--accent-success);
+            animation: pulseDot 2s infinite ease-in-out;
+            display: inline-block;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn-header {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .icon-btn-header:active {
+            transform: scale(0.92);
+            background: var(--bg-surface-hover);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--accent-danger);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: none;
+            border: 2px solid var(--bg-canvas);
+            box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4);
+        }
+
+        /* PWA Install Button */
+        .pwa-install-btn {
+            background: var(--accent-cyan-container);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 100px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+        }
+
+        /* Auth Containers */
+        #auth-container {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            position: relative;
+            min-height: 70vh;
+            z-index: 1;
+        }
+        .auth-view {
+            background: var(--bg-surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-subtle);
+            border-radius: 28px;
+            padding: 32px 24px;
+            box-shadow: var(--shadow-elevated);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            display: none;
+            box-sizing: border-box;
+        }
+        .auth-view.active {
+            display: block;
+            animation: fadeInSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .auth-icon-wrapper {
+            width: 68px;
+            height: 68px;
+            border-radius: 20px;
+            background: var(--accent-primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            color: white;
+            box-shadow: 0 10px 25px var(--accent-primary-glow);
+        }
+        .pending-spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid var(--bg-surface-hover);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        /* Inputs & Buttons */
+        .md-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            font-size: 16px; /* Prevents auto-zoom on iOS */
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .md-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-primary-glow);
+            background: var(--bg-surface-solid);
+        }
+
+        .md-btn {
+            background: var(--accent-primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 100px;
+            padding: 14px 22px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 48px;
+            user-select: none;
+            text-decoration: none;
+            box-shadow: 0 6px 20px var(--accent-primary-glow);
+        }
+        .md-btn:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 8px 24px var(--accent-primary-glow);
+        }
+        .md-btn:active {
+            transform: scale(0.96);
+            opacity: 0.92;
+        }
+        .md-btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1.5px solid var(--border-subtle);
+            box-shadow: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .md-btn-outline:hover {
+            border-color: var(--border-highlight);
+            background: var(--bg-surface-hover);
+            transform: translateY(-1px);
+        }
+        .md-btn-outline:active {
+            transform: scale(0.96);
+        }
+        .md-btn-secondary {
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            box-shadow: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .md-btn-secondary:hover {
+            border-color: var(--border-highlight);
+            background: var(--bg-surface-hover);
+        }
+        .md-btn-secondary:active {
+            transform: scale(0.96);
+        }
+        .md-btn-link {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13.5px;
+            padding: 12px 18px;
+            border-radius: 100px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 44px;
+        }
+        .md-btn-link:hover {
+            color: var(--text-primary);
+            border-color: var(--border-highlight);
+        }
+        .md-btn-link:active {
+            background: var(--bg-surface-hover);
+            transform: scale(0.97);
+        }
+
+        .paste-btn {
+            background: var(--accent-cyan-container);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            border-radius: 100px;
+            padding: 5px 12px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 32px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .paste-btn:hover {
+            transform: translateY(-1px);
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.2);
+        }
+        .paste-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* Main Container & Session Restore Banner */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        .container {
+            width: 100%;
+            max-width: 880px;
+        }
+
+        .restore-banner {
+            width: 100%;
+            background: var(--bg-surface);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-highlight);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            animation: fadeInSlideDown 0.3s ease;
+            box-shadow: var(--shadow-card);
+        }
+        .restore-text {
+            font-size: 13.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-primary);
+        }
+
+        .welcome-banner {
+            width: 100%;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding: 0 4px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .welcome-banner h2 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .plan-badge {
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--accent-primary-container);
+            color: var(--accent-primary);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 4px 12px;
+            border-radius: 100px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .plan-badge.expired {
+            background: var(--accent-danger-container);
+            color: var(--accent-danger);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+        /* 2-Tab Segmented Control */
+        .tabs-container {
+            display: flex;
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+            padding: 4px;
+            margin-bottom: 16px;
+            width: 100%;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 14px;
+            background: transparent;
+            border: none;
+            border-radius: 100px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 46px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+        .tab-btn:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .tab-btn:active {
+            transform: scale(0.97);
+        }
+        .tab-btn.active {
+            background: var(--bg-surface-solid);
+            color: var(--accent-primary);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInSlideUp 0.3s ease;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 20px 18px;
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        .card > h2 {
+            margin: 0 0 6px 0;
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .card > p.desc {
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            text-align: center;
+            margin: 0 0 18px 0;
+            line-height: 1.45;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .row > * {
+            flex: 1 1 100%;
+        }
+        @media (min-width: 620px) {
+            .row > * {
+                flex: 1 1 calc(50% - 8px);
+            }
+            .card {
+                padding: 28px;
+            }
+        }
+
+        /* Upload Capsule */
+        .upload-capsule {
+            border: 2px dashed var(--border-highlight);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            background: rgba(99, 102, 241, 0.03);
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .upload-capsule:active {
+            background: rgba(99, 102, 241, 0.08);
+            transform: scale(0.98);
+        }
+        .hidden-file-input { display: none; }
+
+        /* Metric Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+            display: none;
+            animation: fadeInSlideUp 0.3s ease;
+        }
+        .metric-card {
+            background: var(--bg-surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 12px 6px;
+            text-align: center;
+            box-shadow: var(--shadow-card);
+        }
+        .metric-val {
+            font-size: 20px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .metric-card.success .metric-val { color: var(--accent-success); }
+        .metric-card.warning .metric-val { color: var(--accent-warning); }
+        .metric-card.info .metric-val { color: var(--accent-primary); }
+        .metric-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 4px 0 0 0;
+            text-transform: uppercase;
+        }
+
+        /* Result Cards */
+        .country-card {
+            background: var(--bg-surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
+            animation: fadeInSlideUp 0.3s ease;
+        }
+        .country-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            gap: 10px;
+        }
+        .country-header:active {
+            opacity: 0.8;
+        }
+        .accordion-body {
+            display: none;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border-subtle);
+            margin-top: 14px;
+            animation: fadeInSlideUp 0.25s ease;
+        }
+
+        .card-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+        @media (min-width: 480px) {
+            .card-actions-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .action-card-btn {
+            padding: 12px 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            border-radius: 14px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            min-height: 52px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .action-card-btn:hover {
+            border-color: var(--border-highlight);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            background: var(--bg-surface-hover);
+        }
+        .action-card-btn:active {
+            transform: scale(0.94);
+            background: var(--bg-surface-hover);
+            border-color: var(--accent-primary);
+        }
+        .action-card-btn .material-symbols-outlined {
+            font-size: 20px;
+            color: var(--accent-primary);
+            transition: transform 0.2s ease;
+        }
+        .action-card-btn:hover .material-symbols-outlined {
+            transform: scale(1.1);
+        }
+
+        /* Card Sort Bar */
+        .card-sort-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+        }
+        .sort-bar-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+        .sort-pills-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .sort-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-surface-solid);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            user-select: none;
+        }
+        .sort-pill:hover {
+            color: var(--text-primary);
+            border-color: var(--border-highlight);
+            transform: translateY(-1px);
+        }
+        .sort-pill:active {
+            transform: scale(0.93);
+        }
+        .sort-pill.active {
+            background: var(--accent-primary-gradient);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 2px 10px var(--accent-primary-glow);
+        }
+
+        .number-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 320px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 4px;
+            transition: opacity 0.15s ease;
+        }
+        .number-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .number-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .number-list::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 999px;
+        }
+        .number-list::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+
+        .number-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border-subtle);
+            min-height: 42px;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .number-row:hover {
+            background: var(--bg-surface-hover);
+            border-color: var(--border-highlight);
+            transform: translateX(2px);
+        }
+
+        .load-more-btn {
+            background: var(--bg-surface-elevated);
+            border: 1px dashed var(--border-highlight);
+            color: var(--accent-primary);
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .load-more-btn:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-surface-hover);
+        }
+        .load-more-btn:active {
+            transform: scale(0.98);
+        }
+
+        .header-icon-btn {
+            background: var(--bg-surface-elevated);
+            color: var(--accent-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            width: 38px;
+            height: 38px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .header-icon-btn:active {
+            transform: scale(0.9);
+            background: var(--bg-surface-hover);
+        }
+
+        .payterm-badge {
+            font-size: 11px;
+            background: var(--accent-cyan-container);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .invalid-box {
+            background: var(--accent-danger-container);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 20px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+            text-align: left;
+        }
+
+        /* Help Guide */
+        .help-section {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            margin-top: 20px;
+            text-align: left;
+            overflow: hidden;
+        }
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .help-header h3 {
+            margin: 0;
+            font-size: 14.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .help-body {
+            display: none;
+            padding: 0 16px 16px 16px;
+            border-top: 1px dashed var(--border-subtle);
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        .help-body ol {
+            margin: 10px 0 0 0;
+            padding-left: 18px;
+        }
+
+        /* Modals & Bottom Sheets */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.68);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            z-index: 6000;
+            align-items: flex-end;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        @media (min-width: 600px) {
+            .modal-overlay {
+                align-items: center;
+                padding: 16px;
+            }
+        }
+
+        .custom-modal {
+            background: var(--bg-surface-solid);
+            width: 100%;
+            max-width: 440px;
+            border-radius: 28px 28px 0 0;
+            padding: 24px 20px;
+            padding-bottom: calc(24px + var(--safe-bottom));
+            text-align: center;
+            box-shadow: var(--shadow-elevated);
+            border-top: 1px solid var(--border-subtle);
+            animation: sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+            position: relative;
+            max-height: calc(100dvh - 24px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        @media (min-width: 600px) {
+            .custom-modal {
+                border-radius: 28px;
+                border: 1px solid var(--border-subtle);
+                padding-bottom: 24px;
+                animation: fadeInSlideUp 0.25s ease;
+            }
+        }
+
+        .sheet-handle {
+            width: 38px;
+            height: 4px;
+            border-radius: 10px;
+            background: var(--border-subtle);
+            margin: 0 auto 16px;
+        }
+        @media (min-width: 600px) {
+            .sheet-handle { display: none; }
+        }
+
+        .modal-icon {
+            font-size: 46px;
+            margin-bottom: 12px;
+        }
+        .modal-icon.error { color: var(--accent-danger); }
+        .modal-icon.success { color: var(--accent-success); }
+        .modal-icon.info { color: var(--accent-primary); }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+        }
+        .modal-message {
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text-secondary);
+            margin: 0 0 20px 0;
+            word-break: break-word;
+        }
+
+        /* Admin Modal */
+        .admin-modal {
+            max-width: 740px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            padding: 22px 18px;
+        }
+        .admin-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .stat-card {
+            background: var(--bg-surface-elevated);
+            padding: 10px 6px;
+            border-radius: 14px;
+            text-align: center;
+            border: 1px solid var(--border-subtle);
+        }
+        .stat-num {
+            font-size: 19px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-primary);
+            margin: 0;
+        }
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 2px 0 0 0;
+            text-transform: uppercase;
+        }
+
+        .batch-actions-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        @media (min-width: 480px) {
+            .batch-actions-row {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .batch-btn {
+            padding: 10px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 12px;
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            min-height: 42px;
+        }
+        .batch-btn:active {
+            transform: scale(0.96);
+            background: var(--bg-surface-hover);
+        }
+        .batch-btn.highlight {
+            background: var(--accent-primary-gradient);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px var(--accent-primary-glow);
+        }
+        .batch-btn.danger {
+            color: var(--accent-danger);
+        }
+
+        .admin-filter-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .admin-search {
+            flex: 1 1 100%;
+            padding: 10px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-surface-elevated);
+            color: var(--text-primary);
+            font-size: 13.5px;
+        }
+        .filter-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            min-height: 36px;
+        }
+        .filter-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .admin-user-list {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            flex: 1;
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 10px;
+        }
+        .user-row-admin {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        @media (min-width: 580px) {
+            .user-row-admin {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        .user-name {
+            font-weight: 800;
+            font-size: 15px;
+            margin: 0 0 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .user-email {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            word-break: break-all;
+        }
+        .user-meta {
+            color: var(--text-muted);
+            font-size: 11.5px;
+            margin-top: 6px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .status-badge.pending { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-badge.active { background: var(--accent-success-container); color: var(--accent-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-badge.inactive { background: var(--accent-danger-container); color: var(--accent-danger); border: 1px solid rgba(244, 63, 94, 0.3); }
+
+        .plan-tag {
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--accent-cyan-container);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        .plan-tag.expired {
+            background: var(--accent-danger-container);
+            color: var(--accent-danger);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .admin-btn {
+            padding: 7px 12px;
+            font-size: 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 36px;
+        }
+        .admin-btn.approve { background: var(--accent-success); color: white; }
+        .admin-btn.block { background: var(--accent-warning); color: white; }
+        .admin-btn.delete { background: var(--accent-danger); color: white; }
+        .admin-btn.plan { background: var(--bg-surface-elevated); color: var(--accent-primary); border: 1px solid var(--border-subtle); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 76px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: var(--bg-canvas);
+            padding: 10px 22px;
+            border-radius: 100px;
+            font-size: 13.5px;
+            font-weight: 700;
+            display: none;
+            z-index: 7000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            text-align: center;
+            animation: fadeInSlideDown 0.25s ease forwards;
+        }
+
+        /* Loader */
+        #global-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-canvas);
+            opacity: 0.9;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid var(--border-subtle);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            padding: 24px 16px;
+            padding-bottom: calc(24px + var(--safe-bottom));
+            text-align: center;
+            z-index: 1;
+        }
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13.5px;
+            margin-bottom: 12px;
+            min-height: 44px;
+            transition: all 0.2s ease;
+        }
+        .telegram-btn:active {
+            transform: scale(0.95);
+            background: var(--bg-surface-hover);
+        }
+        .copyright-badge {
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* ===================================================
+           11. MOBILE SMALL SIZE & HIGH-DPI / SCALING ADAPTATIONS
+           =================================================== */
+        @media (max-width: 480px) {
+            .top-bar {
+                width: calc(100% - 16px);
+                margin: 8px auto;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+            .header-title {
+                font-size: 14.5px;
+                gap: 8px;
+                min-width: 0;
+            }
+            .brand-icon-wrapper {
+                width: 32px;
+                height: 32px;
+                border-radius: 9px;
+                flex-shrink: 0;
+            }
+            .brand-icon-wrapper .material-symbols-outlined {
+                font-size: 18px !important;
+            }
+            .icon-btn-header {
+                width: 34px;
+                height: 34px;
+                flex-shrink: 0;
+            }
+            .icon-btn-header .material-symbols-outlined {
+                font-size: 18px !important;
+            }
+            .pwa-install-btn {
+                padding: 5px 10px;
+                font-size: 11.5px;
+                gap: 3px;
+            }
+            
+            /* Tabs */
+            .tabs-container {
+                padding: 3px;
+                margin-bottom: 12px;
+                gap: 3px;
+            }
+            .tab-btn {
+                padding: 10px 6px;
+                font-size: 12.5px;
+                min-height: 40px;
+                gap: 5px;
+            }
+            .tab-btn .material-symbols-outlined {
+                font-size: 18px !important;
+            }
+
+            /* Main Content & Cards */
+            .main-content {
+                padding: 6px 8px;
+            }
+            .card {
+                padding: 16px 14px;
+                border-radius: 20px;
+                margin-bottom: 12px;
+            }
+            .card > h2 {
+                font-size: 17px;
+                gap: 6px;
+            }
+            .card > p.desc {
+                font-size: 12.5px;
+                margin-bottom: 14px;
+            }
+            .upload-capsule {
+                padding: 12px 10px;
+                margin-bottom: 12px;
+                border-radius: 14px;
+            }
+            .md-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+            
+            /* Stats Grid */
+            .stats-grid {
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+            .metric-card {
+                padding: 10px 4px;
+                border-radius: 14px;
+            }
+            .metric-val {
+                font-size: 19px;
+            }
+            .metric-label {
+                font-size: 11px;
+            }
+
+            /* Result Cards & Sorting */
+            .country-card {
+                padding: 14px 12px;
+                border-radius: 18px;
+                margin-bottom: 12px;
+            }
+            .country-header h3 {
+                font-size: 14px;
+            }
+            .card-actions-grid {
+                gap: 6px;
+                margin-bottom: 10px;
+            }
+            .action-card-btn {
+                padding: 10px 4px;
+                font-size: 11.5px;
+                min-height: 46px;
+                gap: 3px;
+                border-radius: 12px;
+            }
+            .action-card-btn .material-symbols-outlined {
+                font-size: 18px;
+            }
+            
+            .card-sort-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 8px 10px;
+                margin-bottom: 10px;
+                border-radius: 12px;
+            }
+            .sort-pills-wrap {
+                width: 100%;
+                display: flex;
+                gap: 4px;
+            }
+            .sort-pill {
+                flex: 1;
+                justify-content: center;
+                text-align: center;
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+            
+            .number-row {
+                padding: 7px 10px;
+                font-size: 13px;
+                min-height: 38px;
+            }
+            .number-row span:first-child {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            /* Modals */
+            .custom-modal {
+                padding: 20px 16px;
+                padding-bottom: calc(20px + var(--safe-bottom));
+                border-radius: 24px 24px 0 0;
+            }
+            .modal-title {
+                font-size: 18px;
+            }
+            .modal-icon {
+                font-size: 38px;
+                margin-bottom: 8px;
+            }
+
+            /* Admin Panel Modal */
+            .admin-modal {
+                max-height: calc(100dvh - 12px) !important;
+                height: 94dvh !important;
+                padding: 16px 12px !important;
+            }
+            .batch-actions-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .batch-btn {
+                padding: 8px 4px;
+                font-size: 11px;
+                min-height: 38px;
+            }
+            .admin-filter-bar {
+                gap: 4px;
+            }
+            .filter-btn {
+                padding: 6px 4px;
+                font-size: 11px;
+                min-height: 32px;
+            }
+        }
+
+        /* Extra Small Devices & High Font-Scale / High-DPI (e.g. 320px - 360px) */
+        @media (max-width: 360px) {
+            .top-bar {
+                width: calc(100% - 10px);
+                padding: 6px 8px;
+            }
+            .header-title span:first-of-type {
+                font-size: 13px;
+                letter-spacing: -0.5px;
+            }
+            .header-actions {
+                gap: 3px;
+            }
+            .icon-btn-header {
+                width: 30px;
+                height: 30px;
+            }
+            .pwa-install-btn {
+                padding: 4px 6px;
+                font-size: 10px;
+            }
+            
+            .tab-btn {
+                padding: 8px 3px;
+                font-size: 11px;
+                gap: 3px;
+            }
+            .tab-btn .material-symbols-outlined {
+                font-size: 15px !important;
+            }
+
+            .card {
+                padding: 14px 10px;
+            }
+            .md-btn {
+                padding: 10px 10px;
+                font-size: 13px;
+            }
+            
+            .stats-grid {
+                gap: 4px;
+            }
+            .metric-card {
+                padding: 8px 2px;
+            }
+            .metric-val {
+                font-size: 16px;
+            }
+            .metric-label {
+                font-size: 9.5px;
+            }
+            
+            .action-card-btn {
+                font-size: 10.5px;
+                padding: 8px 2px;
+                min-height: 42px;
+            }
+            .sort-pill {
+                font-size: 10px;
+                padding: 5px 2px;
+            }
+
+            .admin-actions {
+                width: 100%;
+                display: flex;
+                gap: 4px;
+                margin-top: 6px;
+            }
+            .admin-btn {
+                flex: 1;
+                justify-content: center;
+                padding: 6px 4px;
+                font-size: 10.5px;
+                min-height: 32px;
+            }
+            .admin-btn.delete {
+                flex: 0 0 32px;
+                padding: 0;
+            }
+        }
+
+        /* High-DPI Display Sharpness & Smoothing */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            * {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            .material-symbols-outlined {
+                font-display: block;
+                text-rendering: optimizeLegibility;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Global Loader -->
+    <div id="global-loader"><div class="spinner"></div></div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Action Successful!</div>
+
+    <!-- General Message Modal -->
+    <div id="custom-modal-overlay" class="modal-overlay">
+        <div class="custom-modal" id="custom-modal">
+            <div class="sheet-handle"></div>
+            <span class="material-symbols-outlined modal-icon" id="modal-icon">info</span>
+            <h3 class="modal-title" id="modal-title">Notice</h3>
+            <p class="modal-message" id="modal-message">Message goes here</p>
+            <button class="md-btn" style="width: 100%;" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Export & Chunking Options Modal -->
+    <div id="export-modal-overlay" class="modal-overlay">
+        <div class="custom-modal" id="export-modal">
+            <div class="sheet-handle"></div>
+            <span class="material-symbols-outlined modal-icon info" id="export-modal-icon">download</span>
+            <h3 class="modal-title" id="export-modal-title">Export Clean Numbers</h3>
+            <p class="modal-message" id="export-modal-desc">Configure file naming and batch chunking settings:</p>
+            
+            <div style="text-align: left; margin-bottom: 12px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block;">PAYTERM LABEL (OPTIONAL)</label>
+                <input type="text" id="export-payterm-input" class="md-input" placeholder="e.g. Daily, Weekly, VIP" style="margin-bottom: 0;">
+            </div>
+
+            <div style="text-align: left; margin-bottom: 12px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block;">SORT ORDER</label>
+                <select id="export-sort-select" class="md-input" style="padding: 12px 14px; font-size: 14px;">
+                    <option value="current">Keep Card Sort Order</option>
+                    <option value="original">Original (As Pasted)</option>
+                    <option value="asc">Ascending (0 ➔ 9)</option>
+                    <option value="desc">Descending (9 ➔ 0)</option>
+                </select>
+            </div>
+
+            <div style="text-align: left; margin-bottom: 18px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block;">BATCH SPLITTING / CHUNKING</label>
+                <select id="export-chunk-select" class="md-input" style="padding: 12px 14px; font-size: 14px;">
+                    <option value="0">Single File (No Chunking)</option>
+                    <option value="500">Split into 500 Numbers / File</option>
+                    <option value="1000">Split into 1,000 Numbers / File</option>
+                    <option value="2000">Split into 2,000 Numbers / File</option>
+                    <option value="custom">Custom Chunk Size...</option>
+                </select>
+                <input type="number" id="export-custom-chunk" class="md-input" placeholder="Enter custom chunk size (e.g. 250)" style="display: none; margin-top: 8px;">
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="md-btn md-btn-secondary" style="flex: 1;" onclick="closeExportModal()">Cancel</button>
+                <button class="md-btn" style="flex: 1.2;" id="export-confirm-btn" onclick="confirmDownload()">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Subscription Plan Modal -->
+    <div id="plan-modal-overlay" class="modal-overlay">
+        <div class="custom-modal" id="plan-modal">
+            <div class="sheet-handle"></div>
+            <span class="material-symbols-outlined modal-icon info">verified</span>
+            <h3 class="modal-title">Set User Access Plan</h3>
+            <p class="modal-message" id="plan-modal-desc">Assign validity duration for user:</p>
+            
+            <input type="hidden" id="plan-target-uid">
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
+                <button class="md-btn md-btn-secondary" style="justify-content: flex-start; padding: 14px 16px;" onclick="applyUserPlan(7)">
+                    <span class="material-symbols-outlined" style="color: var(--accent-cyan);">schedule</span> 7 Days Access
+                </button>
+                <button class="md-btn md-btn-secondary" style="justify-content: flex-start; padding: 14px 16px;" onclick="applyUserPlan(30)">
+                    <span class="material-symbols-outlined" style="color: var(--accent-primary);">calendar_month</span> 30 Days Access (1 Month)
+                </button>
+                <button class="md-btn md-btn-secondary" style="justify-content: flex-start; padding: 14px 16px;" onclick="applyUserPlan(90)">
+                    <span class="material-symbols-outlined" style="color: var(--accent-warning);">date_range</span> 90 Days Access (3 Months)
+                </button>
+                <button class="md-btn md-btn-secondary" style="justify-content: flex-start; padding: 14px 16px;" onclick="applyUserPlan(0)">
+                    <span class="material-symbols-outlined" style="color: var(--accent-success);">all_inclusive</span> Lifetime Access
+                </button>
+            </div>
+
+            <button class="md-btn md-btn-outline" style="width: 100%;" onclick="closePlanModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Profile & Change Password Modal -->
+    <div id="profile-panel-overlay" class="modal-overlay">
+        <div class="custom-modal" id="profile-panel-modal">
+            <div class="sheet-handle"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined" style="color: var(--accent-primary);">account_circle</span> My Account
+                </h3>
+                <button class="header-icon-btn" onclick="closeProfilePanel()" style="width: 32px; height: 32px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+                </button>
+            </div>
+            
+            <div style="text-align: left; margin-bottom: 16px; padding: 14px 16px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 16px;">
+                <p style="margin: 0 0 4px 0; font-weight: 800; color: var(--text-primary); font-size: 15px;" id="disp-profile-name">User Name</p>
+                <p style="margin: 0 0 6px 0; color: var(--text-secondary); font-size: 13px;" id="disp-profile-email">email@domain.com</p>
+                <span class="plan-badge" id="disp-profile-plan">Loading plan...</span>
+            </div>
+            
+            <div style="text-align: left; border-top: 1px dashed var(--border-subtle); padding-top: 14px;">
+                <h4 style="margin: 0 0 12px 0; color: var(--text-primary); font-size: 14.5px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">lock_reset</span> Change Password
+                </h4>
+                
+                <div style="position: relative; margin-bottom: 10px;">
+                    <input type="password" id="profile-current-pass" class="md-input" placeholder="Current Password" style="padding-right: 42px;">
+                    <span class="material-symbols-outlined" onclick="togglePass('profile-current-pass', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; color: var(--text-muted); font-size: 20px;">visibility_off</span>
+                </div>
+                <div style="position: relative; margin-bottom: 10px;">
+                    <input type="password" id="profile-new-pass" class="md-input" placeholder="New Password (Min 6 chars)" style="padding-right: 42px;">
+                    <span class="material-symbols-outlined" onclick="togglePass('profile-new-pass', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; color: var(--text-muted); font-size: 20px;">visibility_off</span>
+                </div>
+                <div style="position: relative; margin-bottom: 16px;">
+                    <input type="password" id="profile-confirm-pass" class="md-input" placeholder="Confirm New Password" style="padding-right: 42px;">
+                    <span class="material-symbols-outlined" onclick="togglePass('profile-confirm-pass', this)" style="position: absolute; right: 12px; top: 12px; cursor: pointer; color: var(--text-muted); font-size: 20px;">visibility_off</span>
+                </div>
+                <button class="md-btn" style="width: 100%;" onclick="updateUserPassword()">Save New Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="admin-panel-overlay" class="modal-overlay">
+        <div class="custom-modal admin-modal" id="admin-panel-modal">
+            <div class="sheet-handle"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 class="modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined" style="color: var(--accent-primary);">admin_panel_settings</span> Admin Dashboard
+                </h3>
+                <button class="header-icon-btn" onclick="closeAdminPanel()" style="width: 32px; height: 32px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+                </button>
+            </div>
+            
+            <div class="admin-stats-row">
+                <div class="stat-card"><p class="stat-num" id="stat-total">0</p><p class="stat-label">Total</p></div>
+                <div class="stat-card"><p class="stat-num" id="stat-active" style="color: var(--accent-success);">0</p><p class="stat-label">Active</p></div>
+                <div class="stat-card"><p class="stat-num" id="stat-pending" style="color: var(--accent-warning);">0</p><p class="stat-label">Pending</p></div>
+                <div class="stat-card"><p class="stat-num" id="stat-blocked" style="color: var(--accent-danger);">0</p><p class="stat-label">Blocked</p></div>
+            </div>
+
+            <div class="batch-actions-row">
+                <button class="batch-btn highlight" onclick="showAddUserForm()"><span class="material-symbols-outlined" style="font-size:17px;">person_add</span> Add User</button>
+                <button class="batch-btn" onclick="approveAllPending()"><span class="material-symbols-outlined" style="font-size:17px;">done_all</span> Approve All</button>
+                <button class="batch-btn danger" onclick="clearAllBlocked()"><span class="material-symbols-outlined" style="font-size:17px;">delete_sweep</span> Del Blocked</button>
+                <button class="batch-btn" onclick="exportUsersCSV()"><span class="material-symbols-outlined" style="font-size:17px;">download</span> CSV</button>
+            </div>
+
+            <div class="add-user-section" id="admin-add-user-section" style="display: none; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); padding: 14px; border-radius: 16px; margin-bottom: 12px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--accent-primary); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span> Create New Active User
+                </h4>
+                <input type="text" id="new-user-name" class="md-input" placeholder="Full Name" style="margin-bottom: 8px; padding: 10px;">
+                <input type="email" id="new-user-email" class="md-input" placeholder="Email Address" style="margin-bottom: 8px; padding: 10px;">
+                <input type="text" id="new-user-pass" class="md-input" placeholder="Password (Min. 6 chars)" style="margin-bottom: 12px; padding: 10px;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="md-btn" onclick="adminCreateUser()" style="flex: 1; min-height: 40px;">Create Account</button>
+                    <button class="md-btn md-btn-secondary" onclick="hideAddUserForm()" style="flex: 1; min-height: 40px;">Cancel</button>
+                </div>
+            </div>
+
+            <div class="admin-filter-bar">
+                <input type="text" id="admin-search-input" class="admin-search" placeholder="Search by name or email..." onkeyup="filterAdminList()">
+                <button class="filter-btn active" onclick="setAdminFilter('all', this)">All</button>
+                <button class="filter-btn" onclick="setAdminFilter('pending', this)">Pending</button>
+                <button class="filter-btn" onclick="setAdminFilter('active', this)">Active</button>
+                <button class="filter-btn" onclick="setAdminFilter('inactive', this)">Blocked</button>
+            </div>
+
+            <div class="admin-user-list" id="admin-user-list"></div>
+        </div>
+    </div>
+
+    <!-- Header Capsule -->
+    <header class="top-bar">
+        <div class="header-title">
+            <div class="brand-icon-wrapper">
+                <span class="material-symbols-outlined" style="font-size: 20px;">dialpad</span>
+            </div>
+            <span>Number Tools</span>
+            <span class="status-dot" title="Realtime Sync Active"></span>
+        </div>
+        <div class="header-actions">
+            <button id="pwa-btn" class="pwa-install-btn" onclick="installPWA()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">download_for_offline</span> Install
+            </button>
+            <button id="admin-btn" class="icon-btn-header" onclick="openAdminPanel()" title="Admin Dashboard" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">manage_accounts</span>
+                <span id="admin-badge" class="notification-badge">0</span>
+            </button>
+            <button id="profile-btn" class="icon-btn-header" onclick="openProfilePanel()" title="My Account" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">account_circle</span>
+            </button>
+            <button class="icon-btn-header" onclick="toggleThemeManual()" title="Toggle Theme">
+                <span class="material-symbols-outlined" id="theme-icon" style="font-size: 20px;">dark_mode</span>
+            </button>
+            <button id="logout-btn" class="icon-btn-header" onclick="handleLogout()" title="Sign Out" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Authentication Container -->
+    <div id="auth-container">
+        <!-- Login View -->
+        <div class="auth-view active" id="view-login">
+            <div class="auth-icon-wrapper">
+                <span class="material-symbols-outlined" style="font-size: 34px;">vpn_key</span>
+            </div>
+            <h2 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800;">Welcome Back</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Sign in to access Number Tools Pro.</p>
+            
+            <div style="position: relative; margin-bottom: 12px;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 20px;">mail</span>
+                <input type="email" id="login-email" class="md-input" placeholder="Email Address" style="padding-left: 44px;">
+            </div>
+
+            <div style="position: relative; margin-bottom: 20px;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 20px;">lock</span>
+                <input type="password" id="login-pass" class="md-input" placeholder="Password" style="padding-left: 44px; padding-right: 44px;">
+                <span class="material-symbols-outlined" onclick="togglePass('login-pass', this)" style="position: absolute; right: 14px; top: 14px; cursor: pointer; color: var(--text-muted); font-size: 20px;">visibility_off</span>
+            </div>
+
+            <button class="md-btn" onclick="handleLogin()" style="width: 100%; margin-bottom: 18px;">
+                <span class="material-symbols-outlined">login</span> Log In
+            </button>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="md-btn-link" onclick="handleForgotPassword()">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">password</span> Forgot Password?
+                </button>
+                <button class="md-btn-link" onclick="switchAuthView('signup')">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span> Request Account Access
+                </button>
+            </div>
+        </div>
+
+        <!-- Signup View -->
+        <div class="auth-view" id="view-signup">
+            <div class="auth-icon-wrapper">
+                <span class="material-symbols-outlined" style="font-size: 34px;">assignment_ind</span>
+            </div>
+            <h2 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800;">Request Access</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">Submit your credentials for approval.</p>
+            
+            <div style="position: relative; margin-bottom: 12px;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 20px;">person</span>
+                <input type="text" id="signup-name" class="md-input" placeholder="Your Full Name" style="padding-left: 44px;">
+            </div>
+
+            <div style="position: relative; margin-bottom: 12px;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 20px;">mail</span>
+                <input type="email" id="signup-email" class="md-input" placeholder="Valid Email Address" style="padding-left: 44px;">
+            </div>
+
+            <div style="position: relative; margin-bottom: 12px;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 20px;">lock</span>
+                <input type="password" id="signup-pass" class="md-input" placeholder="Password (Min. 6 chars)" style="padding-left: 44px; padding-right: 44px;">
+                <span class="material-symbols-outlined" onclick="togglePass('signup-pass', this)" style="position: absolute; right: 14px; top: 14px; cursor: pointer; color: var(--text-muted); font-size: 20px;">visibility_off</span>
+            </div>
+
+            <div style="position: relative; margin-bottom: 20px;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted); font-size: 20px;">lock_reset</span>
+                <input type="password" id="signup-confirm" class="md-input" placeholder="Confirm Password" style="padding-left: 44px; padding-right: 44px;">
+                <span class="material-symbols-outlined" onclick="togglePass('signup-confirm', this)" style="position: absolute; right: 14px; top: 14px; cursor: pointer; color: var(--text-muted); font-size: 20px;">visibility_off</span>
+            </div>
+
+            <button class="md-btn" onclick="handleSignUp()" style="width: 100%; margin-bottom: 14px;">
+                <span class="material-symbols-outlined">send</span> Submit Request
+            </button>
+            <button class="md-btn-link" onclick="switchAuthView('login')">
+                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Back to Login
+            </button>
+        </div>
+
+        <!-- Pending Approval View -->
+        <div class="auth-view" id="view-pending">
+            <div class="pending-spinner"></div>
+            <h2 style="margin: 0 0 8px 0; color: var(--accent-primary); font-size: 22px; font-weight: 800;">Review in Progress</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; line-height: 1.5;">
+                Your account registration is under admin review.<br>
+                <b>This screen unlocks automatically once approved.</b>
+            </p>
+            <button class="md-btn md-btn-outline" onclick="handleLogout()">Sign Out</button>
+        </div>
+
+        <!-- Plan Expired View -->
+        <div class="auth-view" id="view-expired">
+            <div class="auth-icon-wrapper" style="background: var(--accent-danger-container); color: var(--accent-danger);">
+                <span class="material-symbols-outlined" style="font-size: 34px;">hourglass_disabled</span>
+            </div>
+            <h2 style="margin: 0 0 8px 0; color: var(--accent-danger); font-size: 22px; font-weight: 800;">Access Expired</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px; line-height: 1.5;">
+                Your subscription plan validity has ended.<br>
+                Please contact admin to renew or extend your plan.
+            </p>
+            <a href="https://t.me/mh_mahim" target="_blank" class="md-btn" style="width: 100%; margin-bottom: 12px; text-decoration: none;">
+                <span class="material-symbols-outlined">send</span> Contact Admin on Telegram
+            </a>
+            <button class="md-btn md-btn-outline" style="width: 100%;" onclick="handleLogout()">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Main Application Interface -->
+    <main class="main-content" id="app-content" style="display: none;">
+        
+        <!-- Restore Session Banner -->
+        <div class="container restore-banner" id="restore-banner">
+            <div class="restore-text">
+                <span class="material-symbols-outlined" style="color: var(--accent-primary);">history</span>
+                <span id="restore-banner-msg">Found previous session.</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+                <button class="paste-btn" onclick="restoreSavedSession()">Restore</button>
+                <button class="paste-btn" style="background: transparent; color: var(--text-muted); border-color: var(--border-subtle);" onclick="dismissSavedSession()">✕</button>
+            </div>
+        </div>
+
+        <!-- Welcome Banner -->
+        <div class="container welcome-banner" id="welcome-banner">
+            <h2>Welcome, <span id="welcome-name" style="color: var(--accent-primary);">User</span> 👋</h2>
+            <div id="plan-badge-container"></div>
+        </div>
+
+        <!-- 2-Tab Segmented Nav -->
+        <div id="tabs-nav" class="tabs-container container">
+            <button class="tab-btn active" onclick="switchTab('tab-cc-remover', this)">
+                <span class="material-symbols-outlined" style="font-size: 20px;">cleaning_services</span>
+                <span class="tab-text">Prefix Remover</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-number-filter', this)">
+                <span class="material-symbols-outlined" style="font-size: 20px;">difference</span>
+                <span class="tab-text">Number Filter</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Prefix Remover (Formerly CC Remover) -->
+        <div id="tab-cc-remover" class="container tab-content active">
+            <div class="card">
+                <h2><span class="material-symbols-outlined" style="color: var(--accent-primary);">cleaning_services</span> Prefix Remover</h2>
+                <p class="desc">যেকোনো দেশের মিক্সড নম্বর থেকে প্রিফিক্স ও কান্ট্রি কোড রিমুভ এবং ডুপ্লিকেট স্কিপ করে ফ্রেশ নম্বর বের করার টুল।</p>
+                
+                <input type="file" id="file-input" class="hidden-file-input" accept=".txt,.csv" onchange="handleFileUpload(event, 'raw-numbers', 'file-name-display')">
+                <div class="upload-capsule" onclick="document.getElementById('file-input').click()">
+                    <span class="material-symbols-outlined" style="font-size: 28px; color: var(--accent-primary);">cloud_upload</span>
+                    <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">Tap to Upload TXT / CSV File</span>
+                    <span id="file-name-display" style="font-size: 12px; color: var(--text-muted);">or paste raw numbers below</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="font-weight: 700; font-size: 13px; color: var(--text-secondary);">RAW NUMBERS / SPREADSHEET</label>
+                    <button class="paste-btn" onclick="pasteFromClipboard('raw-numbers')">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">content_paste</span> Paste
+                    </button>
+                </div>
+                <textarea id="raw-numbers" class="md-input" rows="6" placeholder="Paste numbers or TSV/CSV tables here..." style="font-family: 'JetBrains Mono', monospace; font-size: 14px;"></textarea>
+                
+                <div style="display: flex; gap: 10px; width: 100%; margin-top: 14px;">
+                    <button class="md-btn md-btn-outline" onclick="clearCCFields()" style="flex: 1;">
+                        <span class="material-symbols-outlined">delete_sweep</span> Clear
+                    </button>
+                    <button class="md-btn" onclick="processNumbers()" style="flex: 1.6;">
+                        <span class="material-symbols-outlined">bolt</span> Process Numbers
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div id="cc-stats-grid" class="stats-grid">
+                <div class="metric-card info">
+                    <p class="metric-val" id="cc-stat-total">0</p>
+                    <p class="metric-label">Scanned</p>
+                </div>
+                <div class="metric-card warning">
+                    <p class="metric-val" id="cc-stat-dupes">0</p>
+                    <p class="metric-label">Duplicates</p>
+                </div>
+                <div class="metric-card success">
+                    <p class="metric-val" id="cc-stat-fresh">0</p>
+                    <p class="metric-label">Fresh</p>
+                </div>
+            </div>
+
+            <div id="results-container"></div>
+            
+            <!-- Invalid Box -->
+            <div id="invalid-container" class="invalid-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 style="color: var(--accent-danger); margin: 0; font-size: 14.5px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined">warning</span> Invalid Numbers
+                    </h3>
+                    <button class="paste-btn" onclick="copyInvalidNumbers()" style="border-color: rgba(244, 63, 94, 0.4); color: var(--accent-danger); background: var(--accent-danger-container);">
+                        <span class="material-symbols-outlined" style="font-size: 15px;">content_copy</span> Copy Invalid
+                    </button>
+                </div>
+                <textarea id="invalid-numbers-text" class="md-input" rows="4" readonly style="border-color: rgba(244, 63, 94, 0.4); font-family: 'JetBrains Mono', monospace; font-size: 13px;"></textarea>
+            </div>
+
+            <div class="help-section">
+                <div class="help-header" onclick="toggleHelp(this)">
+                    <h3><span class="material-symbols-outlined" style="color: var(--accent-primary);">menu_book</span> Quick User Guide</h3>
+                    <span class="material-symbols-outlined toggle-icon" style="transition: transform 0.25s;">expand_more</span>
+                </div>
+                <div class="help-body">
+                    <ol>
+                        <li><b>Input:</b> Paste mixed phone numbers or spreadsheets, or tap the upload area.</li>
+                        <li><b>Process:</b> Tap <b>Process Numbers</b>. Strips country dial codes/prefixes, eliminates duplicates, and groups by country.</li>
+                        <li><b>Export:</b> Tap <b>TXT</b> or <b>CSV</b> with optional batch chunking (500, 1000, etc.).</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Number Filter -->
+        <div id="tab-number-filter" class="container tab-content">
+            <div class="card">
+                <h2><span class="material-symbols-outlined" style="color: var(--accent-cyan);">difference</span> Number Filter</h2>
+                <p class="desc">দুটি লিস্ট তুলনা করে স্বয়ংক্রিয়ভাবে কান্ট্রি কোড রিমুভ ও ডুপ্লিকেট স্কিপ করে ফ্রেশ নম্বর বের করার টুল।</p>
+                
+                <div class="row">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-weight: 700; font-size: 13px; color: var(--text-secondary);">TOTAL NUMBERS</label>
+                            <button class="paste-btn" onclick="pasteFromClipboard('total-numbers')">
+                                <span class="material-symbols-outlined" style="font-size: 15px;">content_paste</span> Paste
+                            </button>
+                        </div>
+                        <textarea id="total-numbers" class="md-input" rows="6" placeholder="Paste total number list..." style="font-family: 'JetBrains Mono', monospace; font-size: 14px;"></textarea>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-weight: 700; font-size: 13px; color: var(--text-secondary);">ALREADY USED NUMBERS</label>
+                            <button class="paste-btn" onclick="pasteFromClipboard('used-numbers')">
+                                <span class="material-symbols-outlined" style="font-size: 15px;">content_paste</span> Paste
+                            </button>
+                        </div>
+                        <textarea id="used-numbers" class="md-input" rows="6" placeholder="Paste used numbers here..." style="font-family: 'JetBrains Mono', monospace; font-size: 14px;"></textarea>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; width: 100%; margin-top: 14px;">
+                    <button class="md-btn md-btn-outline" onclick="clearFilterFields()" style="flex: 1;">
+                        <span class="material-symbols-outlined">delete_sweep</span> Clear
+                    </button>
+                    <button class="md-btn" onclick="filterUnusedNumbers()" style="flex: 1.6;">
+                        <span class="material-symbols-outlined">filter_alt</span> Find Unused
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div id="filter-stats-grid" class="stats-grid">
+                <div class="metric-card info">
+                    <p class="metric-val" id="filter-stat-total">0</p>
+                    <p class="metric-label">Valid Total</p>
+                </div>
+                <div class="metric-card warning">
+                    <p class="metric-val" id="filter-stat-used">0</p>
+                    <p class="metric-label">Used / Dupes</p>
+                </div>
+                <div class="metric-card success">
+                    <p class="metric-val" id="filter-stat-fresh">0</p>
+                    <p class="metric-label">Unused Fresh</p>
+                </div>
+            </div>
+
+            <div id="filter-results-container"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="display: flex; flex-direction: column; align-items: center; margin: 0 auto;">
+            <a href="https://t.me/mh_mahim" target="_blank" rel="noopener noreferrer" class="telegram-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/></svg>
+                <span>Direct Contact: @mh_mahim</span>
+            </a>
+            <div class="copyright-badge">&copy; 2026 Number Tools Pro. Secured by Firebase.</div>
+        </div>
+    </footer>
+
+    <!-- ===================================================
+         APPLICATION LOGIC & CORE ENGINE
+         =================================================== -->
+    <script>
+        // ==========================================
+        // 1. CONSTANTS & IN-MEMORY STORE
+        // ==========================================
+        const ADMIN_EMAIL = "mahimmdmh@gmail.com"; 
+        
+        const resultStore = new Map();
+        let pendingDownloadParams = null;
+        let deferredInstallPrompt = null;
+
+        // --- PWA Service Worker Registration & Install ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const pwaBtn = document.getElementById('pwa-btn');
+            if (pwaBtn) pwaBtn.style.display = 'inline-flex';
+        });
+
+        async function installPWA() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                const pwaBtn = document.getElementById('pwa-btn');
+                if (pwaBtn) pwaBtn.style.display = 'none';
+            }
+            deferredInstallPrompt = null;
+        }
+
+        // --- Theme Engine ---
+        function getSystemTheme() {
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+            
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#090d16' : '#f4f6fb');
+        }
+
+        const savedTheme = localStorage.getItem('nt_theme');
+        applyTheme(savedTheme || getSystemTheme());
+        
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('nt_theme')) applyTheme(e.matches ? 'dark' : 'light');
+            });
+        }
+
+        function toggleThemeManual() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('nt_theme', nextTheme);
+            applyTheme(nextTheme);
+        }
+
+        // ==========================================
+        // 2. MODAL & TOAST NOTIFICATIONS
+        // ==========================================
+        function showCustomAlert(title, message, type = 'info') {
+            const overlay = document.getElementById('custom-modal-overlay');
+            const icon = document.getElementById('modal-icon');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            icon.className = 'material-symbols-outlined modal-icon ' + type;
+            icon.textContent = type === 'error' ? 'error' : (type === 'success' ? 'check_circle' : 'info');
+            overlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal-overlay').style.display = 'none';
+        }
+
+        let toastTimer = null;
+        function showToast(msg = "Success!") {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        async function copyText(text) {
+            if (!navigator.clipboard) {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Copied to clipboard!");
+                } catch (err) {
+                    showToast("Failed to copy!");
+                }
+                document.body.removeChild(textArea);
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast("Copied to clipboard! 📋");
+            } catch (e) {
+                showToast("Failed to copy!");
+            }
+        }
+
+        function isOnline() {
+            if (!navigator.onLine) {
+                showCustomAlert("No Connection", "Please verify your internet connection.", "error");
+                return false;
+            }
+            return true;
+        }
+
+        // ==========================================
+        // 3. FIREBASE SETUP & INITIALIZATION
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfOKtrRieiAwUzvs4QtFLigavwnLgcwbI",
+            authDomain: "number-tools-mahim.firebaseapp.com",
+            projectId: "number-tools-mahim",
+            storageBucket: "number-tools-mahim.firebasestorage.app",
+            messagingSenderId: "57927718534",
+            appId: "1:57927718534:web:911baca0a09f0124c96307",
+            measurementId: "G-GGK9MHER91"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        function getSecondaryAuth() {
+            let secApp = firebase.apps.find(app => app.name === 'SecondaryApp');
+            if (!secApp) {
+                secApp = firebase.initializeApp(firebaseConfig, "SecondaryApp");
+            }
+            return secApp.auth();
+        }
+
+        let currentSessionId = localStorage.getItem('nt_session_id');
+        if (!currentSessionId) {
+            currentSessionId = 'sess_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+            localStorage.setItem('nt_session_id', currentSessionId);
+        }
+
+        let unsubscribeSnapshot = null;
+        let adminUnsubscribe = null;
+        let isLoggingIn = false;
+        let allUsersData = [];
+        let currentAdminFilter = 'all';
+
+        // ==========================================
+        // 4. HEARTBEAT ACTIVE TIME TRACKER (BUG-FREE)
+        // ==========================================
+        let trackerActive = false;
+        let lastHeartbeatTime = 0;
+        let activeBufferSeconds = 0;
+        let currentUserUid = null;
+        let heartbeatInterval = null;
+
+        function startTracker(uid) {
+            if (trackerActive) return;
+            trackerActive = true;
+            currentUserUid = uid;
+            lastHeartbeatTime = Date.now();
+            activeBufferSeconds = 0;
+
+            document.addEventListener("visibilitychange", handleVisibilityChange);
+            window.addEventListener("beforeunload", flushTimeSpent);
+
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(runHeartbeat, 15000);
+        }
+
+        function stopTracker() {
+            if (!trackerActive) return;
+            flushTimeSpent();
+            trackerActive = false;
+            currentUserUid = null;
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("beforeunload", flushTimeSpent);
+        }
+
+        function runHeartbeat() {
+            if (!trackerActive || !currentUserUid) return;
+            const now = Date.now();
+            const elapsed = Math.floor((now - lastHeartbeatTime) / 1000);
+            lastHeartbeatTime = now;
+
+            if (!document.hidden && elapsed > 0 && elapsed <= 45) {
+                activeBufferSeconds += elapsed;
+            }
+
+            if (activeBufferSeconds >= 60) {
+                flushTimeSpent();
+            }
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                flushTimeSpent();
+            } else {
+                lastHeartbeatTime = Date.now();
+            }
+        }
+
+        async function flushTimeSpent() {
+            if (!trackerActive || !currentUserUid || activeBufferSeconds <= 0) return;
+            const secondsToSync = activeBufferSeconds;
+            activeBufferSeconds = 0;
+            try {
+                await db.collection('users').doc(currentUserUid).update({
+                    total_usage_seconds: firebase.firestore.FieldValue.increment(secondsToSync),
+                    last_active: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) {
+                console.log("Time sync notice:", e.message);
+            }
+        }
+
+        function formatTimeSpent(seconds) {
+            if (!seconds || seconds <= 0) return "0m";
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            if (h > 0) return `${h}h ${m}m`;
+            return `${m}m`;
+        }
+
+        function formatLastActive(timestamp) {
+            if (!timestamp) return "Never";
+            const date = timestamp.toDate();
+            const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
+            if (diffSec < 60) return "Active now";
+            if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+            if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+            if (diffSec < 604800) return `${Math.floor(diffSec / 86400)}d ago`;
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        }
+
+        // ==========================================
+        // 5. AUTH STATE & ACCESS CONTROL
+        // ==========================================
+        auth.onAuthStateChanged(user => {
+            document.getElementById('global-loader').style.display = 'none';
+            if (user) {
+                if (isOnline()) initRealtimeAccess(user);
+                
+                if (user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    document.getElementById('admin-btn').style.display = 'flex';
+                    initAdminListener();
+                } else {
+                    document.getElementById('admin-btn').style.display = 'none';
+                    if (adminUnsubscribe) { adminUnsubscribe(); adminUnsubscribe = null; }
+                }
+            } else {
+                stopTracker();
+                if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+                if (adminUnsubscribe) { adminUnsubscribe(); adminUnsubscribe = null; }
+                document.getElementById('admin-btn').style.display = 'none';
+                document.getElementById('profile-btn').style.display = 'none';
+                showAppMode(false);
+            }
+        });
+
+        function initRealtimeAccess(user) {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            
+            unsubscribeSnapshot = db.collection('users').doc(user.uid).onSnapshot(async (snap) => {
+                document.getElementById('global-loader').style.display = 'none';
+                if (!snap.exists) {
+                    showCustomAlert("Access Denied", "No user profile found.", "error");
+                    auth.signOut();
+                    return;
+                }
+                
+                const data = snap.data();
+                const now = Date.now();
+                const isAdmin = user.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+                document.getElementById('disp-profile-name').textContent = data.name || "User";
+                document.getElementById('disp-profile-email').textContent = data.email || user.email;
+                document.getElementById('welcome-name').textContent = data.name || "User";
+
+                // Subscription Plan Display & Expiry Verification
+                let planText = "👑 Lifetime Access";
+                let isExpired = false;
+
+                if (data.expires_at) {
+                    const expiryMillis = data.expires_at.toMillis();
+                    const remainingDays = Math.ceil((expiryMillis - now) / 86400000);
+                    if (remainingDays <= 0) {
+                        isExpired = true;
+                        planText = "⚠️ Plan Expired";
+                    } else {
+                        planText = `⚡ ${remainingDays} days remaining`;
+                    }
+                }
+                
+                const planBadge = document.getElementById('disp-profile-plan');
+                if (planBadge) planBadge.textContent = planText;
+                
+                const bannerBadgeContainer = document.getElementById('plan-badge-container');
+                if (bannerBadgeContainer) {
+                    bannerBadgeContainer.innerHTML = `<span class="plan-badge ${isExpired ? 'expired' : ''}">${planText}</span>`;
+                }
+
+                // Check Subscription Expiry for non-admins
+                if (!isAdmin && isExpired && data.status === 'active') {
+                    stopTracker();
+                    document.getElementById('auth-container').style.display = 'flex';
+                    document.getElementById('app-content').style.display = 'none';
+                    switchAuthView('expired');
+                    return;
+                }
+
+                // Admin exempt from 7-day auto lock
+                if (!isAdmin && data.last_active && (now - data.last_active.toMillis() > 604800000) && data.status === 'active') {
+                    await db.collection('users').doc(user.uid).update({ status: 'inactive' });
+                    showCustomAlert("Session Expired", "Account deactivated due to 7 days of inactivity.", "error");
+                    auth.signOut();
+                    return;
+                }
+                
+                // Multi-device session guard
+                if (data.current_session && data.current_session !== currentSessionId && !isLoggingIn) {
+                    showCustomAlert("Security Notice", "Your account was logged in from another device.", "error");
+                    auth.signOut();
+                    return;
+                }
+
+                if (data.status === 'pending') {
+                    stopTracker();
+                    document.getElementById('auth-container').style.display = 'flex';
+                    document.getElementById('app-content').style.display = 'none';
+                    document.getElementById('logout-btn').style.display = 'none';
+                    document.getElementById('profile-btn').style.display = 'none';
+                    switchAuthView('pending');
+                } else if (data.status === 'active') {
+                    if (document.getElementById('app-content').style.display !== 'flex') {
+                        await db.collection('users').doc(user.uid).update({
+                            last_active: firebase.firestore.FieldValue.serverTimestamp(),
+                            current_session: currentSessionId
+                        });
+                        showAppMode(true);
+                        showToast(`Welcome back, ${data.name || 'User'}! 👋`);
+                        startTracker(user.uid);
+                        checkSavedSessionBanner();
+                    }
+                } else {
+                    stopTracker();
+                    showCustomAlert("Restricted", "Account has been suspended by Admin.", "error");
+                    auth.signOut();
+                }
+            }, error => {
+                handleFirebaseError(error);
+                auth.signOut();
+            });
+        }
+
+        function switchAuthView(view) {
+            document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + view);
+            if (target) target.classList.add('active');
+        }
+
+        function showAppMode(isLoggedIn) {
+            document.getElementById('auth-container').style.display = isLoggedIn ? 'none' : 'flex';
+            document.getElementById('app-content').style.display = isLoggedIn ? 'flex' : 'none';
+            document.getElementById('logout-btn').style.display = isLoggedIn ? 'flex' : 'none';
+            
+            if (!isLoggedIn) {
+                switchAuthView('login');
+                document.getElementById('login-pass').value = '';
+                document.getElementById('welcome-banner').style.display = 'none';
+                document.getElementById('profile-btn').style.display = 'none';
+            } else {
+                document.getElementById('profile-btn').style.display = 'flex';
+                document.getElementById('welcome-banner').style.display = 'flex';
+            }
+        }
+
+        async function handleLogin() {
+            if (!isOnline()) return;
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            if (!email || !pass) return showCustomAlert("Required", "Please enter your email and password.", "info");
+            
+            document.getElementById('global-loader').style.display = 'flex';
+            isLoggingIn = true;
+            try {
+                const cred = await auth.signInWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(cred.user.uid).update({
+                    current_session: currentSessionId,
+                    last_active: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) {
+                handleFirebaseError(e);
+            } finally {
+                document.getElementById('global-loader').style.display = 'none';
+                isLoggingIn = false;
+            }
+        }
+
+        async function handleSignUp() {
+            if (!isOnline()) return;
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const pass = document.getElementById('signup-pass').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (!name || !email || !pass) return showCustomAlert("Required", "Please fill in all details.", "error");
+            if (pass.length < 6) return showCustomAlert("Password", "Password must be at least 6 characters.", "error");
+            if (pass !== confirm) return showCustomAlert("Mismatch", "Passwords do not match.", "error");
+            
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) return showCustomAlert("Invalid Format", "Please provide a valid email.", "error");
+
+            document.getElementById('global-loader').style.display = 'flex';
+            
+            const domain = email.toLowerCase().split('@')[1];
+            try {
+                const dnsResponse = await fetch(`https://dns.google/resolve?name=${domain}&type=MX`);
+                const dnsData = await dnsResponse.json();
+                if (dnsData.Status === 0 && (!dnsData.Answer || dnsData.Answer.length === 0)) {
+                    document.getElementById('global-loader').style.display = 'none';
+                    return showCustomAlert("Invalid Domain", "Email domain cannot receive messages.", "error");
+                }
+            } catch (err) {}
+
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(cred.user.uid).set({
+                    name: name,
+                    email: email,
+                    status: 'pending',
+                    total_usage_seconds: 0,
+                    expires_at: null,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    last_active: firebase.firestore.FieldValue.serverTimestamp(),
+                    current_session: currentSessionId
+                });
+            } catch (e) {
+                handleFirebaseError(e);
+            } finally {
+                document.getElementById('global-loader').style.display = 'none';
+            }
+        }
+
+        async function handleForgotPassword() {
+            if (!isOnline()) return;
+            const email = document.getElementById('login-email').value.trim();
+            if (!email) return showCustomAlert("Email Required", "Please enter your registered email address first.", "info");
+            
+            document.getElementById('global-loader').style.display = 'flex';
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showCustomAlert("Link Sent", "Password reset link dispatched. Check your inbox.", "success");
+            } catch (e) {
+                handleFirebaseError(e);
+            } finally {
+                document.getElementById('global-loader').style.display = 'none';
+            }
+        }
+
+        function handleLogout() {
+            stopTracker();
+            auth.signOut();
+            showToast("Signed out successfully");
+        }
+
+        function handleFirebaseError(error) {
+            let msg = error.message;
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                msg = "Invalid email or password.";
+            } else if (msg.toLowerCase().includes("offline") || error.code === 'unavailable') {
+                msg = "Network connectivity error.";
+            } else if (error.code === 'auth/email-already-in-use') {
+                msg = "This email address is already registered.";
+            }
+            showCustomAlert("Error", msg, "error");
+        }
+
+        // ==========================================
+        // 6. PROFILE & PASSWORD MANAGEMENT
+        // ==========================================
+        function openProfilePanel() {
+            document.getElementById('profile-panel-overlay').style.display = 'flex';
+        }
+        function closeProfilePanel() {
+            document.getElementById('profile-panel-overlay').style.display = 'none';
+            document.getElementById('profile-current-pass').value = '';
+            document.getElementById('profile-new-pass').value = '';
+            document.getElementById('profile-confirm-pass').value = '';
+        }
+
+        async function updateUserPassword() {
+            if (!isOnline()) return;
+            const currentPass = document.getElementById('profile-current-pass').value;
+            const newPass = document.getElementById('profile-new-pass').value;
+            const confirmPass = document.getElementById('profile-confirm-pass').value;
+
+            if (!currentPass || !newPass || !confirmPass) {
+                return showCustomAlert("Missing Fields", "Please complete all fields.", "error");
+            }
+            if (newPass.length < 6) {
+                return showCustomAlert("Weak Password", "Password must be at least 6 characters.", "error");
+            }
+            if (newPass !== confirmPass) {
+                return showCustomAlert("Mismatch", "Passwords do not match.", "error");
+            }
+
+            const user = auth.currentUser;
+            if (!user) return;
+
+            document.getElementById('global-loader').style.display = 'flex';
+            try {
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPass);
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(newPass);
+                showCustomAlert("Updated", "Password has been successfully changed.", "success");
+                closeProfilePanel();
+            } catch (e) {
+                if (e.code === 'auth/wrong-password') {
+                    showCustomAlert("Error", "The current password entered is incorrect.", "error");
+                } else {
+                    handleFirebaseError(e);
+                }
+            } finally {
+                document.getElementById('global-loader').style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // 7. ADMIN DASHBOARD & SUBSCRIPTIONS
+        // ==========================================
+        function initAdminListener() {
+            if (adminUnsubscribe) adminUnsubscribe();
+            adminUnsubscribe = db.collection('users').orderBy('created_at', 'desc').onSnapshot(snap => {
+                allUsersData = [];
+                let pendingCount = 0, activeCount = 0, blockedCount = 0;
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    data.uid = doc.id;
+                    allUsersData.push(data);
+                    if (data.status === 'pending') pendingCount++;
+                    else if (data.status === 'active') activeCount++;
+                    else if (data.status === 'inactive') blockedCount++;
+                });
+
+                document.getElementById('stat-total').textContent = allUsersData.length;
+                document.getElementById('stat-active').textContent = activeCount;
+                document.getElementById('stat-pending').textContent = pendingCount;
+                document.getElementById('stat-blocked').textContent = blockedCount;
+
+                const badge = document.getElementById('admin-badge');
+                if (pendingCount > 0) {
+                    badge.textContent = pendingCount;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+                
+                renderAdminList();
+            });
+        }
+
+        function renderAdminList() {
+            const searchQ = (document.getElementById('admin-search-input').value || '').toLowerCase();
+            const listContainer = document.getElementById('admin-user-list');
+            let html = '';
+
+            const filteredData = allUsersData.filter(user => {
+                const nameMatch = (user.name || '').toLowerCase().includes(searchQ);
+                const emailMatch = (user.email || '').toLowerCase().includes(searchQ);
+                const statusMatch = currentAdminFilter === 'all' || user.status === currentAdminFilter;
+                return (nameMatch || emailMatch) && statusMatch;
+            });
+
+            filteredData.forEach(data => {
+                let joinedStr = "Unknown";
+                if (data.created_at) {
+                    const d = data.created_at.toDate();
+                    joinedStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                }
+                
+                const timeStr = formatTimeSpent(data.total_usage_seconds || 0);
+                const lastActiveStr = formatLastActive(data.last_active);
+
+                // Plan Status
+                let planTag = `<span class="plan-tag">Lifetime</span>`;
+                if (data.expires_at) {
+                    const daysLeft = Math.ceil((data.expires_at.toMillis() - Date.now()) / 86400000);
+                    if (daysLeft <= 0) {
+                        planTag = `<span class="plan-tag expired">Expired (${Math.abs(daysLeft)}d ago)</span>`;
+                    } else {
+                        planTag = `<span class="plan-tag">${daysLeft}d left</span>`;
+                    }
+                }
+
+                html += `
+                    <div class="user-row-admin">
+                        <div class="user-info">
+                            <h4 class="user-name">
+                                ${data.name || 'No Name'} 
+                                <span class="status-badge ${data.status}">${data.status}</span>
+                                ${planTag}
+                            </h4>
+                            <p class="user-email">
+                                <span class="material-symbols-outlined" style="font-size: 15px;">mail</span> ${data.email}
+                                <span class="material-symbols-outlined" onclick="copyText('${data.email}')" style="font-size: 15px; cursor: pointer; color: var(--accent-primary);" title="Copy Email">content_copy</span>
+                            </p>
+                            <div class="user-meta">
+                                <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: middle;">calendar_today</span> Joined: ${joinedStr}</span>
+                                <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: middle; color: var(--accent-success);">history</span> Last Active: <b>${lastActiveStr}</b></span>
+                                <span><span class="material-symbols-outlined" style="font-size: 13px; vertical-align: middle; color: var(--accent-primary);">timer</span> Active: <b>${timeStr}</b></span>
+                            </div>
+                        </div>
+                        <div class="admin-actions">
+                            ${data.status !== 'active' ? `<button class="admin-btn approve" onclick="changeUserStatus('${data.uid}', 'active')"><span class="material-symbols-outlined" style="font-size: 15px;">check_circle</span> Approve</button>` : ''}
+                            ${data.status !== 'inactive' ? `<button class="admin-btn block" onclick="changeUserStatus('${data.uid}', 'inactive')"><span class="material-symbols-outlined" style="font-size: 15px;">block</span> Block</button>` : ''}
+                            <button class="admin-btn plan" onclick="openPlanModal('${data.uid}', '${(data.name || '').replace(/'/g, "\\'")}')" title="Set Plan Duration"><span class="material-symbols-outlined" style="font-size: 15px;">schedule</span> Plan</button>
+                            <button class="admin-btn delete" onclick="deleteUserRecord('${data.uid}')" title="Delete User"><span class="material-symbols-outlined" style="font-size: 16px;">delete</span></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html || '<div style="text-align:center; padding:32px 16px; color:var(--text-muted);"><span class="material-symbols-outlined" style="font-size: 36px;">search_off</span><p style="margin:6px 0 0 0;">No matching users found.</p></div>';
+        }
+
+        function setAdminFilter(status, btnElement) {
+            currentAdminFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderAdminList();
+        }
+        function filterAdminList() { renderAdminList(); }
+        function openAdminPanel() {
+            document.getElementById('admin-panel-overlay').style.display = 'flex';
+        }
+        function closeAdminPanel() {
+            document.getElementById('admin-panel-overlay').style.display = 'none';
+            hideAddUserForm();
+        }
+        function changeUserStatus(uid, newStatus) {
+            db.collection('users').doc(uid).update({ status: newStatus })
+                .then(() => showToast("Status updated!"))
+                .catch(e => showCustomAlert("Error", e.message, "error"));
+        }
+        async function deleteUserRecord(uid) {
+            if (confirm("Permanently delete this user record?")) {
+                try {
+                    await db.collection('users').doc(uid).delete();
+                    showToast("User deleted.");
+                } catch (e) {
+                    showCustomAlert("Error", e.message, "error");
+                }
+            }
+        }
+
+        // --- Subscription Plan Control ---
+        function openPlanModal(uid, name) {
+            document.getElementById('plan-target-uid').value = uid;
+            document.getElementById('plan-modal-desc').textContent = `Assign validity duration for ${name}:`;
+            document.getElementById('plan-modal-overlay').style.display = 'flex';
+        }
+        function closePlanModal() {
+            document.getElementById('plan-modal-overlay').style.display = 'none';
+        }
+        async function applyUserPlan(days) {
+            const uid = document.getElementById('plan-target-uid').value;
+            if (!uid) return closePlanModal();
+
+            let expiresAt = null;
+            if (days > 0) {
+                const expiryDate = new Date(Date.now() + days * 86400000);
+                expiresAt = firebase.firestore.Timestamp.fromDate(expiryDate);
+            }
+
+            try {
+                await db.collection('users').doc(uid).update({ expires_at: expiresAt });
+                showToast(days > 0 ? `Assigned ${days} days access!` : "Assigned Lifetime access!");
+                closePlanModal();
+            } catch (e) {
+                showCustomAlert("Error", e.message, "error");
+            }
+        }
+
+        function showAddUserForm() { document.getElementById('admin-add-user-section').style.display = 'block'; }
+        function hideAddUserForm() {
+            document.getElementById('admin-add-user-section').style.display = 'none';
+            document.getElementById('new-user-name').value = '';
+            document.getElementById('new-user-email').value = '';
+            document.getElementById('new-user-pass').value = '';
+        }
+        
+        async function adminCreateUser() {
+            if (!isOnline()) return;
+            const name = document.getElementById('new-user-name').value.trim();
+            const email = document.getElementById('new-user-email').value.trim();
+            const pass = document.getElementById('new-user-pass').value;
+
+            if (!name || !email || !pass) return showCustomAlert("Required", "Complete all fields to create a user.", "error");
+            if (pass.length < 6) return showCustomAlert("Password", "Password must be at least 6 characters.", "error");
+
+            document.getElementById('global-loader').style.display = 'flex';
+            try {
+                const secAuth = getSecondaryAuth();
+                const cred = await secAuth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(cred.user.uid).set({
+                    name: name, 
+                    email: email, 
+                    status: 'active',
+                    total_usage_seconds: 0,
+                    expires_at: null,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    last_active: firebase.firestore.FieldValue.serverTimestamp(),
+                    current_session: ''
+                });
+                await secAuth.signOut();
+                hideAddUserForm();
+                showToast("User Created Successfully!");
+            } catch (e) {
+                handleFirebaseError(e);
+            } finally {
+                document.getElementById('global-loader').style.display = 'none';
+            }
+        }
+
+        async function approveAllPending() {
+            const pendingUsers = allUsersData.filter(u => u.status === 'pending');
+            if (pendingUsers.length === 0) return showToast("No pending requests.");
+            if (confirm(`Approve all ${pendingUsers.length} pending users?`)) {
+                document.getElementById('global-loader').style.display = 'flex';
+                try {
+                    const batch = db.batch();
+                    pendingUsers.forEach(u => batch.update(db.collection('users').doc(u.uid), { status: 'active' }));
+                    await batch.commit();
+                    showToast("All pending users approved!");
+                } catch (e) {
+                    showCustomAlert("Error", e.message, "error");
+                }
+                document.getElementById('global-loader').style.display = 'none';
+            }
+        }
+
+        async function clearAllBlocked() {
+            const blockedUsers = allUsersData.filter(u => u.status === 'inactive');
+            if (blockedUsers.length === 0) return showToast("No blocked users.");
+            if (confirm(`Permanently remove ${blockedUsers.length} blocked accounts?`)) {
+                document.getElementById('global-loader').style.display = 'flex';
+                try {
+                    const batch = db.batch();
+                    blockedUsers.forEach(u => batch.delete(db.collection('users').doc(u.uid)));
+                    await batch.commit();
+                    showToast("Blocked accounts deleted!");
+                } catch (e) {
+                    showCustomAlert("Error", e.message, "error");
+                }
+                document.getElementById('global-loader').style.display = 'none';
+            }
+        }
+
+        function exportUsersCSV() {
+            if (allUsersData.length === 0) return showToast("No user data to export.");
+            let csvContent = "Name,Email,Status,Time Spent,Date Joined,Last Active\n";
+            allUsersData.forEach(u => {
+                const dateStr = u.created_at ? u.created_at.toDate().toLocaleString() : "N/A";
+                const lastActiveStr = u.last_active ? u.last_active.toDate().toLocaleString() : "N/A";
+                const timeStr = formatTimeSpent(u.total_usage_seconds || 0);
+                csvContent += `"${(u.name || '').replace(/"/g, '""')}","${(u.email || '').replace(/"/g, '""')}","${u.status}","${timeStr}","${dateStr}"\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `NumberTools_Users_${Date.now()}.csv`;
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("CSV Exported! 📊");
+        }
+
+        // ==========================================
+        // 8. TABS, PARSING & TOOL PROCESSING
+        // ==========================================
+        function togglePass(id, el) {
+            const input = document.getElementById(id);
+            if (input.type === 'password') {
+                input.type = 'text';
+                el.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                el.textContent = 'visibility_off';
+            }
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function toggleHelp(element) {
+            const body = element.nextElementSibling;
+            const icon = element.querySelector('.toggle-icon');
+            if (body.style.display === 'none' || body.style.display === '') {
+                body.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                body.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        async function pasteFromClipboard(elementId) {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    const el = document.getElementById(elementId);
+                    el.value = el.value ? el.value + '\n' + text : text;
+                    showToast("Pasted from clipboard!");
+                }
+            } catch (err) {
+                showCustomAlert("Clipboard", "Please paste directly into the box.", "info");
+            }
+        }
+
+        function handleFileUpload(event, textareaId, labelId) {
+            const file = event.target.files[0];
+            const label = document.getElementById(labelId);
+            if (!file) {
+                if (label) label.textContent = "or paste raw numbers below";
+                return;
+            }
+            if (label) label.textContent = `Attached: ${file.name}`;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(textareaId).value = e.target.result;
+                showToast(`Loaded ${file.name}`);
+            };
+            reader.readAsText(file);
+        }
+
+        function clearCCFields() {
+            document.getElementById('raw-numbers').value = '';
+            document.getElementById('file-name-display').textContent = 'or paste raw numbers below';
+            document.getElementById('file-input').value = '';
+            document.getElementById('results-container').innerHTML = '';
+            document.getElementById('invalid-container').style.display = 'none';
+            document.getElementById('invalid-numbers-text').value = ''; 
+            document.getElementById('cc-stats-grid').style.display = 'none';
+            showToast("Fields Cleared");
+        }
+
+        function clearFilterFields() {
+            document.getElementById('total-numbers').value = '';
+            document.getElementById('used-numbers').value = '';
+            document.getElementById('filter-results-container').innerHTML = '';
+            document.getElementById('filter-stats-grid').style.display = 'none';
+            showToast("Fields Cleared");
+        }
+
+        function copyInvalidNumbers() {
+            const text = document.getElementById('invalid-numbers-text').value;
+            if (!text.trim()) return showToast("No invalid numbers to copy!");
+            copyText(text);
+        }
+
+        function parseLineData(line) {
+            let range = "", payterm = "", rawNumStr = line.trim();
+            let delimiter = line.includes('\t') ? '\t' : (line.includes(',') ? ',' : null);
+            if (delimiter) {
+                const parts = line.split(delimiter).map(p => p.trim()).filter(p => p !== '');
+                let numIndex = -1;
+                for (let i = 0; i < parts.length; i++) {
+                    let stripped = parts[i].replace(/\D/g, '');
+                    if (stripped.length >= 6 && !/[a-zA-Z]/.test(parts[i])) {
+                        numIndex = i;
+                        break;
+                    }
+                }
+                if (numIndex !== -1) {
+                    rawNumStr = parts[numIndex];
+                    if (numIndex > 0) range = parts[0];
+                    if (numIndex < parts.length - 1) payterm = parts[numIndex + 1];
+                }
+            }
+            return { rawNumStr, range, payterm };
+        }
+
+        function normalizeNumberString(text) {
+            if (!text) return null;
+            let cleaned = text.replace(/["',()\s-]/g, '').trim();
+            if (!cleaned || /[a-zA-Z]/.test(cleaned)) return null;
+            
+            const digits = cleaned.replace(/\D/g, '');
+            if (digits.length < 6) return null;
+
+            if (cleaned.startsWith('00')) {
+                cleaned = '+' + cleaned.substring(2);
+            } else if (!cleaned.startsWith('+')) {
+                cleaned = '+' + cleaned;
+            }
+            return cleaned;
+        }
+
+        // --- Save & Restore Local Session ---
+        function saveSessionLocally(tabName, totalCount, groupsData) {
+            try {
+                const sessionPayload = {
+                    tab: tabName,
+                    count: totalCount,
+                    timestamp: Date.now(),
+                    groups: groupsData
+                };
+                localStorage.setItem('nt_cached_session', JSON.stringify(sessionPayload));
+            } catch (e) {}
+        }
+
+        function checkSavedSessionBanner() {
+            try {
+                const raw = localStorage.getItem('nt_cached_session');
+                if (!raw) return;
+                const session = JSON.parse(raw);
+                if (Date.now() - session.timestamp < 86400000 && session.count > 0) {
+                    const banner = document.getElementById('restore-banner');
+                    const msg = document.getElementById('restore-banner-msg');
+                    const diffM = Math.max(1, Math.round((Date.now() - session.timestamp) / 60000));
+                    msg.textContent = `Found previous ${session.tab} session (${session.count} fresh numbers, ${diffM}m ago).`;
+                    banner.style.display = 'flex';
+                }
+            } catch (e) {}
+        }
+
+        function restoreSavedSession() {
+            try {
+                const raw = localStorage.getItem('nt_cached_session');
+                if (!raw) return;
+                const session = JSON.parse(raw);
+                dismissSavedSession();
+
+                if (session.tab === 'Prefix Remover' || session.tab === 'CC Remover') {
+                    switchTab('tab-cc-remover', document.querySelectorAll('.tab-btn')[0]);
+                    const container = document.getElementById('results-container');
+                    container.innerHTML = '';
+                    for (const [key, group] of Object.entries(session.groups)) {
+                        let title = `${group.country}`;
+                        if (group.range) title += ` - ${group.range}`;
+                        renderResultCard(container, title, group.nums, group.country, group.range, group.payterm);
+                    }
+                    showToast("Previous Prefix Remover session restored!");
+                } else if (session.tab === 'Number Filter') {
+                    switchTab('tab-number-filter', document.querySelectorAll('.tab-btn')[1]);
+                    const container = document.getElementById('filter-results-container');
+                    container.innerHTML = '';
+                    for (const [key, group] of Object.entries(session.groups)) {
+                        let title = `🎯 ${group.country}`;
+                        if (group.range) title += ` - ${group.range}`;
+                        renderResultCard(container, title, group.nums, group.country, group.range, group.payterm);
+                    }
+                    showToast("Previous Number Filter session restored!");
+                }
+            } catch (e) {
+                showToast("Failed to restore session.");
+            }
+        }
+
+        function dismissSavedSession() {
+            document.getElementById('restore-banner').style.display = 'none';
+        }
+
+        // --- Tool 1: Prefix Remover ---
+        function processNumbers() {
+            const rawText = document.getElementById('raw-numbers').value.replace(/"/g, '');
+            if (!rawText.trim()) return showToast("Nothing to process!");
+            
+            document.getElementById('global-loader').style.display = 'flex';
+
+            setTimeout(() => {
+                const lines = rawText.split('\n');
+                const resultsContainer = document.getElementById('results-container');
+                const invalidContainer = document.getElementById('invalid-container');
+                const invalidText = document.getElementById('invalid-numbers-text');
+                const statsGrid = document.getElementById('cc-stats-grid');
+                
+                resultsContainer.innerHTML = '';
+                invalidContainer.style.display = 'none';
+                invalidText.value = '';
+                statsGrid.style.display = 'none';
+
+                const groups = {};
+                const invalidNums = [];
+                const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+                let totalProcessed = 0;
+                let uniqueAdded = 0;
+
+                lines.forEach(line => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine || trimmedLine.toLowerCase().includes('my payterm') || trimmedLine.toLowerCase().includes('range')) return;
+                    
+                    const { rawNumStr, range, payterm } = parseLineData(trimmedLine);
+                    const originalText = rawNumStr.trim();
+                    const cleaned = normalizeNumberString(rawNumStr);
+
+                    if (!cleaned) {
+                        if (originalText && originalText.length >= 3) invalidNums.push(originalText);
+                        return;
+                    }
+
+                    try {
+                        const phoneNumber = libphonenumber.parsePhoneNumber(cleaned);
+                        if (phoneNumber && phoneNumber.isValid()) {
+                            totalProcessed++;
+                            const countryCode = phoneNumber.country;
+                            let countryName = "Unknown Country";
+                            if (countryCode) {
+                                try { countryName = regionNames.of(countryCode); } catch (e) {}
+                            }
+                            
+                            const finalNumber = phoneNumber.nationalNumber;
+                            const groupKey = `${countryName}|||${range}|||${payterm}`;
+                            
+                            if (!groups[groupKey]) {
+                                groups[groupKey] = {
+                                    country: countryName,
+                                    range: range,
+                                    payterm: payterm,
+                                    nums: []
+                                };
+                            }
+                            
+                            if (!groups[groupKey].nums.includes(finalNumber)) {
+                                groups[groupKey].nums.push(finalNumber);
+                                uniqueAdded++;
+                            }
+                        } else {
+                            invalidNums.push(originalText);
+                        }
+                    } catch (error) {
+                        invalidNums.push(originalText);
+                    }
+                });
+
+                const duplicates = totalProcessed - uniqueAdded;
+                if (totalProcessed > 0) {
+                    statsGrid.style.display = 'grid';
+                    document.getElementById('cc-stat-total').textContent = totalProcessed;
+                    document.getElementById('cc-stat-dupes').textContent = duplicates;
+                    document.getElementById('cc-stat-fresh').textContent = uniqueAdded;
+                    saveSessionLocally('Prefix Remover', uniqueAdded, groups);
+                }
+
+                if (Object.keys(groups).length === 0 && invalidNums.length === 0) {
+                    resultsContainer.innerHTML = '<div class="card"><p style="color: var(--accent-danger); margin: 0; text-align: center; font-weight: 700;">⚠️ No valid numbers found.</p></div>';
+                } else {
+                    for (const [key, groupData] of Object.entries(groups)) {
+                        let title = `${groupData.country}`;
+                        if (groupData.range) title += ` - ${groupData.range}`;
+                        renderResultCard(resultsContainer, title, groupData.nums, groupData.country, groupData.range, groupData.payterm);
+                    }
+                }
+
+                if (invalidNums.length > 0) {
+                    invalidContainer.style.display = 'block';
+                    invalidText.value = invalidNums.join('\n');
+                }
+                document.getElementById('global-loader').style.display = 'none';
+            }, 50);
+        }
+
+        // --- Tool 2: Number Filter ---
+        function filterUnusedNumbers() {
+            const totalText = document.getElementById('total-numbers').value.replace(/"/g, '');
+            const usedText = document.getElementById('used-numbers').value.replace(/"/g, '');
+            if (!totalText.trim()) return showToast("Total numbers box is empty.");
+            
+            document.getElementById('global-loader').style.display = 'flex';
+
+            setTimeout(() => {
+                const totalLines = totalText.split('\n');
+                const usedLines = usedText.split(/[\n,\t;]+/);
+                const resultsContainer = document.getElementById('filter-results-container');
+                const statsGrid = document.getElementById('filter-stats-grid');
+                
+                resultsContainer.innerHTML = '';
+                statsGrid.style.display = 'none';
+
+                const usedNationalSet = new Set();
+                usedLines.forEach(line => {
+                    const cleaned = normalizeNumberString(line);
+                    if (!cleaned) return;
+                    try {
+                        const parsed = libphonenumber.parsePhoneNumber(cleaned);
+                        if (parsed && parsed.isValid()) {
+                            usedNationalSet.add(parsed.nationalNumber);
+                        }
+                    } catch (e) {}
+                });
+
+                const groups = {};
+                const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+                let totalProcessedCount = 0;
+                let totalUnusedCount = 0;
+
+                totalLines.forEach(line => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine || trimmedLine.toLowerCase().includes('my payterm') || trimmedLine.toLowerCase().includes('range')) return;
+                    
+                    const { rawNumStr, range, payterm } = parseLineData(trimmedLine);
+                    const cleaned = normalizeNumberString(rawNumStr);
+                    if (!cleaned) return;
+
+                    try {
+                        const parsed = libphonenumber.parsePhoneNumber(cleaned);
+                        if (parsed && parsed.isValid()) {
+                            totalProcessedCount++;
+                            const nationalNum = parsed.nationalNumber;
+                            if (!usedNationalSet.has(nationalNum)) {
+                                let countryName = "Unknown Country";
+                                if (parsed.country) {
+                                    try { countryName = regionNames.of(parsed.country); } catch (e) {}
+                                }
+                                const groupKey = `${countryName}|||${range}|||${payterm}`;
+                                if (!groups[groupKey]) {
+                                    groups[groupKey] = {
+                                        country: countryName,
+                                        range: range,
+                                        payterm: payterm,
+                                        nums: []
+                                    };
+                                }
+                                if (!groups[groupKey].nums.includes(nationalNum)) {
+                                    groups[groupKey].nums.push(nationalNum);
+                                    totalUnusedCount++;
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                });
+
+                const matchedUsedCount = totalProcessedCount - totalUnusedCount;
+                if (totalProcessedCount > 0) {
+                    statsGrid.style.display = 'grid';
+                    document.getElementById('filter-stat-total').textContent = totalProcessedCount;
+                    document.getElementById('filter-stat-used').textContent = matchedUsedCount;
+                    document.getElementById('filter-stat-fresh').textContent = totalUnusedCount;
+                    saveSessionLocally('Number Filter', totalUnusedCount, groups);
+                }
+
+                if (totalUnusedCount === 0) {
+                    resultsContainer.innerHTML = '<div class="card" style="text-align:center;"><span class="material-symbols-outlined" style="font-size: 48px; color: var(--accent-success);">done_all</span><h3 style="margin-top: 10px; font-weight: 800;">All numbers are used!</h3><p style="margin:0; color: var(--text-muted);">No fresh uncontacted numbers remain.</p></div>';
+                } else {
+                    for (const [key, groupData] of Object.entries(groups)) {
+                        let title = `🎯 ${groupData.country}`;
+                        if (groupData.range) title += ` - ${groupData.range}`;
+                        renderResultCard(resultsContainer, title, groupData.nums, groupData.country, groupData.range, groupData.payterm);
+                    }
+                }
+                document.getElementById('global-loader').style.display = 'none';
+            }, 50);
+        }
+
+        // ==========================================
+        // 9. RESULT CARD & VIRTUAL PREVIEW
+        // ==========================================
+        function renderResultCard(containerElement, title, numsArray, countryName, metaRange = "", metaPayterm = "") {
+            const count = numsArray.length;
+            const groupId = 'grp_' + Math.random().toString(36).substring(2, 9);
+            
+            resultStore.set(groupId, {
+                id: groupId,
+                country: countryName,
+                range: metaRange,
+                payterm: metaPayterm,
+                numbers: [...numsArray],
+                originalNumbers: [...numsArray],
+                sortOrder: 'original',
+                displayedCount: Math.min(count, 50)
+            });
+
+            const card = document.createElement('div');
+            card.className = 'country-card';
+            card.id = `card-${groupId}`;
+
+            let paytermHTML = "";
+            if (metaPayterm && metaPayterm.trim() !== "") {
+                paytermHTML = `<span class="payterm-badge">Payterm: ${metaPayterm}</span>`;
+            }
+
+            const header = document.createElement('div');
+            header.className = 'country-header';
+            header.innerHTML = `
+                <div style="flex: 1; min-width: 0; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <h3 style="margin: 0; font-size: 15.5px; font-weight: 800;">${title}</h3>
+                        ${paytermHTML}
+                    </div>
+                    <div style="margin-top: 4px;"><small style="color: var(--accent-primary); font-weight: 700; font-family: 'JetBrains Mono', monospace;">Output: ${count} fresh</small></div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                    <button class="header-icon-btn" onclick="event.stopPropagation(); triggerDownload('${groupId}', 'txt')" title="Quick Download TXT">
+                        <span class="material-symbols-outlined" style="font-size: 19px;">description</span>
+                    </button>
+                    <span class="material-symbols-outlined toggle-icon" style="transition: transform 0.25s; color: var(--text-muted);">expand_more</span>
+                </div>
+            `;
+
+            const bodyContainer = document.createElement('div');
+            bodyContainer.className = 'accordion-body';
+            bodyContainer.innerHTML = `
+                <div class="card-actions-grid">
+                    <button class="action-card-btn" onclick="copyAllFromGroup('${groupId}')">
+                        <span class="material-symbols-outlined">content_copy</span>
+                        <span>Copy All</span>
+                    </button>
+                    <button class="action-card-btn" onclick="triggerDownload('${groupId}', 'txt')">
+                        <span class="material-symbols-outlined">description</span>
+                        <span>TXT File</span>
+                    </button>
+                    <button class="action-card-btn" onclick="triggerDownload('${groupId}', 'csv')">
+                        <span class="material-symbols-outlined">table_view</span>
+                        <span>CSV File</span>
+                    </button>
+                    <button class="action-card-btn" onclick="shareGroupData('${groupId}')">
+                        <span class="material-symbols-outlined">share</span>
+                        <span>Share</span>
+                    </button>
+                </div>
+
+                <div class="card-sort-bar">
+                    <div class="sort-bar-label">
+                        <span class="material-symbols-outlined" style="font-size: 16px; color: var(--accent-primary);">swap_vert</span>
+                        <span>Sort:</span>
+                    </div>
+                    <div class="sort-pills-wrap">
+                        <button type="button" class="sort-pill active" onclick="applySort('${groupId}', 'original', this)">Original</button>
+                        <button type="button" class="sort-pill" onclick="applySort('${groupId}', 'asc', this)">0 ➔ 9 (Asc)</button>
+                        <button type="button" class="sort-pill" onclick="applySort('${groupId}', 'desc', this)">9 ➔ 0 (Desc)</button>
+                    </div>
+                </div>
+
+                <div class="number-list" id="list-${groupId}"></div>
+                <div id="load-more-container-${groupId}"></div>
+            `;
+
+            const listElement = bodyContainer.querySelector(`#list-${groupId}`);
+            const loadMoreContainer = bodyContainer.querySelector(`#load-more-container-${groupId}`);
+            renderListChunk(groupId, listElement, loadMoreContainer);
+
+            header.onclick = function() {
+                const icon = this.querySelector('.toggle-icon');
+                if (bodyContainer.style.display === 'none' || bodyContainer.style.display === '') {
+                    bodyContainer.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    bodyContainer.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            };
+
+            card.appendChild(header);
+            card.appendChild(bodyContainer);
+            containerElement.appendChild(card);
+        }
+
+        function applySort(groupId, sortType, btnElement) {
+            const data = resultStore.get(groupId);
+            if (!data) return;
+
+            if (btnElement) {
+                const parent = btnElement.closest('.sort-pills-wrap');
+                if (parent) {
+                    parent.querySelectorAll('.sort-pill').forEach(el => el.classList.remove('active'));
+                    btnElement.classList.add('active');
+                }
+            }
+
+            data.sortOrder = sortType;
+            if (sortType === 'original') {
+                data.numbers = [...data.originalNumbers];
+            } else if (sortType === 'asc') {
+                data.numbers = sortNumbersArray(data.originalNumbers, 'asc');
+            } else if (sortType === 'desc') {
+                data.numbers = sortNumbersArray(data.originalNumbers, 'desc');
+            }
+
+            data.displayedCount = Math.min(50, data.numbers.length);
+            const listElement = document.getElementById(`list-${groupId}`);
+            const loadMoreContainer = document.getElementById(`load-more-container-${groupId}`);
+            if (listElement && loadMoreContainer) {
+                listElement.style.opacity = '0.3';
+                setTimeout(() => {
+                    renderListChunk(groupId, listElement, loadMoreContainer);
+                    listElement.style.opacity = '1';
+                }, 60);
+            }
+        }
+
+        function sortNumbersArray(arr, mode) {
+            if (mode === 'asc') {
+                return [...arr].sort((a, b) => {
+                    const cleanA = a.replace(/\D/g, '');
+                    const cleanB = b.replace(/\D/g, '');
+                    if (cleanA.length !== cleanB.length) return cleanA.length - cleanB.length;
+                    return cleanA.localeCompare(cleanB);
+                });
+            }
+            if (mode === 'desc') {
+                return [...arr].sort((a, b) => {
+                    const cleanA = a.replace(/\D/g, '');
+                    const cleanB = b.replace(/\D/g, '');
+                    if (cleanA.length !== cleanB.length) return cleanB.length - cleanA.length;
+                    return cleanB.localeCompare(cleanA);
+                });
+            }
+            return [...arr];
+        }
+
+        function renderListChunk(groupId, listElement, loadMoreContainer) {
+            const data = resultStore.get(groupId);
+            if (!data) return;
+
+            const allNums = data.numbers;
+            const currentCount = data.displayedCount;
+            listElement.innerHTML = '';
+            const slice = allNums.slice(0, currentCount);
+
+            slice.forEach(num => {
+                const row = document.createElement('div');
+                row.className = 'number-row';
+                row.innerHTML = `
+                    <span>${num}</span>
+                    <button class="header-icon-btn" style="width:30px; height:30px; background:transparent; border:none;" onclick="copyText('${num}')" title="Copy">
+                        <span class="material-symbols-outlined" style="font-size: 17px;">content_copy</span>
+                    </button>
+                `;
+                listElement.appendChild(row);
+            });
+
+            if (currentCount < allNums.length) {
+                const remaining = allNums.length - currentCount;
+                const nextStep = Math.min(remaining, 50);
+                loadMoreContainer.innerHTML = `
+                    <button class="load-more-btn" onclick="loadMoreNumbers('${groupId}')">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">expand_more</span>
+                        Load More (+${nextStep}) — ${remaining} remaining
+                    </button>
+                `;
+            } else {
+                loadMoreContainer.innerHTML = '';
+            }
+        }
+
+        function loadMoreNumbers(groupId) {
+            const data = resultStore.get(groupId);
+            if (!data) return;
+            data.displayedCount = Math.min(data.displayedCount + 50, data.numbers.length);
+            
+            const listElement = document.getElementById(`list-${groupId}`);
+            const loadMoreContainer = document.getElementById(`load-more-container-${groupId}`);
+            if (listElement && loadMoreContainer) {
+                renderListChunk(groupId, listElement, loadMoreContainer);
+            }
+        }
+
+        function copyAllFromGroup(groupId) {
+            const data = resultStore.get(groupId);
+            if (!data || !data.numbers.length) return showToast("No numbers to copy!");
+            copyText(data.numbers.join('\n'));
+        }
+
+        // ==========================================
+        // 10. EXPORT & BATCH CHUNKING DOWNLOADS
+        // ==========================================
+        const chunkSelect = document.getElementById('export-chunk-select');
+        const customChunkInput = document.getElementById('export-custom-chunk');
+        if (chunkSelect) {
+            chunkSelect.addEventListener('change', () => {
+                customChunkInput.style.display = chunkSelect.value === 'custom' ? 'block' : 'none';
+            });
+        }
+
+        function triggerDownload(groupId, type) {
+            const data = resultStore.get(groupId);
+            if (!data) return;
+
+            pendingDownloadParams = { groupId, type };
+            const modalTitle = document.getElementById('export-modal-title');
+            const modalIcon = document.getElementById('export-modal-icon');
+            const paytermInput = document.getElementById('export-payterm-input');
+            const sortSelect = document.getElementById('export-sort-select');
+
+            modalTitle.textContent = `Export .${type.toUpperCase()}`;
+            modalIcon.textContent = type === 'csv' ? 'table_view' : 'description';
+            paytermInput.value = data.payterm || '';
+            if (sortSelect) sortSelect.value = 'current';
+
+            document.getElementById('export-modal-overlay').style.display = 'flex';
+            paytermInput.focus();
+        }
+
+        function closeExportModal() {
+            document.getElementById('export-modal-overlay').style.display = 'none';
+            pendingDownloadParams = null;
+        }
+
+        function confirmDownload() {
+            if (!pendingDownloadParams) return closeExportModal();
+            const customPayterm = document.getElementById('export-payterm-input').value.trim();
+            const chunkVal = document.getElementById('export-chunk-select').value;
+            const sortVal = document.getElementById('export-sort-select') ? document.getElementById('export-sort-select').value : 'current';
+            let chunkSize = 0;
+            if (chunkVal === 'custom') {
+                chunkSize = parseInt(document.getElementById('export-custom-chunk').value) || 0;
+            } else {
+                chunkSize = parseInt(chunkVal) || 0;
+            }
+
+            const { groupId, type } = pendingDownloadParams;
+            closeExportModal();
+            executeBatchDownload(groupId, type, customPayterm, chunkSize, sortVal);
+        }
+
+        function executeBatchDownload(groupId, type, paytermValue, chunkSize, sortOverride = 'current') {
+            const data = resultStore.get(groupId);
+            if (!data || !data.numbers.length) return;
+
+            let allNums = [...data.numbers];
+            if (sortOverride === 'original') {
+                allNums = [...data.originalNumbers];
+            } else if (sortOverride === 'asc') {
+                allNums = sortNumbersArray(data.originalNumbers, 'asc');
+            } else if (sortOverride === 'desc') {
+                allNums = sortNumbersArray(data.originalNumbers, 'desc');
+            }
+
+            const count = allNums.length;
+            let safeCountryName = data.country.replace(/[^a-zA-Z0-9 -]/g, "").trim();
+            if (safeCountryName === "Unknown Country" || !safeCountryName) safeCountryName = "Numbers";
+
+            let baseName = safeCountryName;
+            if (data.range && paytermValue) {
+                const safeRange = data.range.replace(/[^a-zA-Z0-9 -_]/g, "").trim();
+                const safePayterm = paytermValue.replace(/[^a-zA-Z0-9 -_]/g, "").trim();
+                baseName = `${safePayterm}_${safeRange}`;
+            } else if (paytermValue) {
+                const safePayterm = paytermValue.replace(/[^a-zA-Z0-9 -_]/g, "").trim();
+                baseName = `${safeCountryName}_${safePayterm}`;
+            }
+
+            // No chunking: download single file
+            if (!chunkSize || chunkSize <= 0 || chunkSize >= count) {
+                downloadSingleChunk(allNums, `${baseName}(${count}).${type}`, type);
+                showToast(`Downloaded ${baseName}(${count}).${type} 📥`);
+                return;
+            }
+
+            // Split into chunks and download sequentially
+            const totalParts = Math.ceil(count / chunkSize);
+            showToast(`Generating ${totalParts} chunk files...`);
+
+            for (let i = 0; i < totalParts; i++) {
+                const chunkSlice = allNums.slice(i * chunkSize, (i + 1) * chunkSize);
+                const partFileName = `${baseName}_Part${i + 1}_of_${totalParts}(${chunkSlice.length}).${type}`;
+                
+                setTimeout(() => {
+                    downloadSingleChunk(chunkSlice, partFileName, type);
+                }, i * 250);
+            }
+            setTimeout(() => {
+                showToast(`Downloaded all ${totalParts} parts! 📦`);
+            }, totalParts * 250);
+        }
+
+        function downloadSingleChunk(numbersArray, filename, type) {
+            let fileContent = "";
+            let mimeType = 'text/plain';
+
+            if (type === 'csv') {
+                mimeType = 'text/csv;charset=utf-8;';
+                fileContent = "Phone Number\n" + numbersArray.map(n => `"${n}"`).join('\n');
+            } else {
+                mimeType = 'text/plain;charset=utf-8;';
+                fileContent = numbersArray.join('\n');
+            }
+
+            const blob = new Blob([fileContent], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function shareGroupData(groupId) {
+            const data = resultStore.get(groupId);
+            if (!data) return;
+
+            const textData = data.numbers.join('\n');
+            const blob = new Blob([textData], { type: 'text/plain' });
+            const filename = `${data.country.replace(/\s+/g, '_')}_Numbers.txt`;
+            const file = new File([blob], filename, { type: 'text/plain' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: `${data.country} Numbers (${data.numbers.length})`,
+                        files: [file]
+                    });
+                    showToast("Shared successfully!");
+                } catch (err) {}
+            } else if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `${data.country} Numbers (${data.numbers.length})`,
+                        text: textData.slice(0, 4000)
+                    });
+                } catch (err) {}
+            } else {
+                copyText(textData);
+                showCustomAlert("Copied", "Web sharing is unsupported on this browser. Numbers copied to clipboard!", "info");
+            }
+        }
+    </script>
+</body>
+</html>
