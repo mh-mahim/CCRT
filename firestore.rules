@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email.lower() == 'mahimmdmh@gmail.com'
+      );
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users Collection Rules
+    match /users/{userId} {
+      // Admin can read and write everything
+      allow read, write: if isAdmin();
+      
+      // User can read their own document (for real-time access, expiry & status checks)
+      allow get: if isOwner(userId);
+      
+      // New user can create their own profile upon signup
+      allow create: if isOwner(userId)
+                    && request.resource.data.email == request.auth.token.email
+                    && request.resource.data.status == 'pending';
+      
+      // User can update only their session, last_active, and usage seconds
+      allow update: if isOwner(userId) && (
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['status', 'email', 'created_at', 'expires_at'])
+      );
+      
+      // Users cannot delete their own profile directly (only Admin can)
+      allow delete: if isAdmin();
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
